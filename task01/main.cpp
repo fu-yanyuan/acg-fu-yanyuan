@@ -31,6 +31,33 @@ Eigen::Matrix<double,4,4,Eigen::RowMajor> GetHomographicTransformation(
   // (c0[2][0],c0[][1],z) -> (c1[2][0],c1[2][1],z)
   // (c0[3][0],c0[][1],z) -> (c1[3][0],c1[3][1],z)
 
+  Eigen::Matrix<double,8,8,Eigen::RowMajor> P;
+  // P*H = b, P is 8x8, H is [a0, ..., a7] 8x1
+    P <<
+      c0[0][0], c0[0][1], 1, 0, 0, 0, -c0[0][0]*c1[0][0], -c0[0][1]*c1[0][0],
+      0, 0, 0, c0[0][0], c0[0][1], 1, -c0[0][0]*c1[0][1], -c0[0][1]*c1[0][1],
+      c0[1][0], c0[1][1], 1, 0, 0, 0, -c0[1][0]*c1[1][0], -c0[1][1]*c1[1][0],
+      0, 0, 0, c0[1][0], c0[1][1], 1, -c0[1][0]*c1[1][1], -c0[1][1]*c1[1][1],
+      c0[2][0], c0[2][1], 1, 0, 0, 0, -c0[2][0]*c1[2][0], -c0[2][1]*c1[2][0],
+      0, 0, 0, c0[2][0], c0[2][1], 1, -c0[2][0]*c1[2][1], -c0[2][1]*c1[2][1],
+      c0[3][0], c0[3][1], 1, 0, 0, 0, -c0[3][0]*c1[3][0], -c0[3][1]*c1[3][0],
+      0, 0, 0, c0[3][0], c0[3][1], 1, -c0[3][0]*c1[3][1], -c0[3][1]*c1[3][1];
+  // b is the coefficient of 1, move this to the right side of the "="
+  Eigen::Matrix<double,8,1> b;
+    b << c1[0][0], c1[0][1], c1[1][0], c1[1][1], c1[2][0], c1[2][1], c1[3][0], c1[3][1];
+  // Linear solving Ax=b
+  Eigen::JacobiSVD<Eigen::MatrixXd> svd(P , Eigen::ComputeThinV | Eigen::ComputeThinU );
+  Eigen::VectorXd H = svd.solve(b);
+  // fill a_i in the coresponding places, Z-coordinate holds
+  m(0, 0) = H(0);
+  m(0, 1) = H(1);
+  m(0, 3) = H(2);
+  m(1, 0) = H(3);
+  m(1, 1) = H(4);
+  m(1, 3) = H(5);
+  m(3, 0) = H(6);
+  m(3, 1) = H(7);
+
   return m;
 }
 
