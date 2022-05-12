@@ -10,6 +10,28 @@ uniform float time; // current time given from CPU
  * pos: position to evaluate SDF
  * hsize: half size in the XYZ axis
  */
+float sdf_sphere(vec3 p, vec3 c, float r)
+{
+  return length(p-c) - r;
+}
+
+float sdf_union(vec3 p, vec3 c, float r_big, float r_small, float interval)
+{
+  float d = sdf_sphere(p, c, r_small);
+  for(float i=-r_big; i<=r_big; i+=interval)
+  {
+    for(float j=-r_big; j<=r_big; j+=interval)
+    {
+      for(float k=-r_big; k<=r_big; k+=interval)
+      {
+        float dc = sdf_sphere(p, vec3(i, j, k), r_small);
+        d = min(d, dc);
+      }
+    }
+  }
+  return d;
+}
+
 float sdf_box( vec3 pos, vec3 hsize )
 {
   vec3 q = abs(pos) - hsize;
@@ -26,8 +48,9 @@ float SDF(vec3 pos)
   // Look Inigo Quilez's article for hints:
   // https://iquilezles.org/articles/distfunctions/
 
-  // for "problem2" the code below is not used.
-  return sdf_box(pos, vec3(0.1,0.2,0.3));
+  float dunion = sdf_union(pos, vec3(0.0, 0.0, 0.0), 0.8, 0.12, 0.2); // union of the small spheres
+  float d = sdf_sphere(pos, vec3(0.0, 0.0, 0.0), 0.8); // the big sphere
+  return max(d, -dunion); // substraction
 }
 
 void main()
