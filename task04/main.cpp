@@ -48,29 +48,18 @@ double SamplingHemisphere(
   // hint3: for longitude use inverse sampling method to achieve cosine weighted sample.
   // hint4: first assume z is the up in the polar coordinate, then rotate the sampled direction such that "z" will be up.
   // write some codes below (5-10 lines)
+  const auto d1 = dfm2::MyERand48<double>(Xi);  // you can sample uniform distribution [0,1] with this function
+  const auto d2 = dfm2::MyERand48<double>(Xi);
 
+  const auto phi = d1 * M_PI * 2;
+  const auto theta = acos(sqrt(d2));
+  // transform to (x, y, z) for uniform sampling
+  dir[0] = sin(theta) * cos(phi); // x = sin thera * cos phi
+  dir[1] = sin(theta) * sin(phi); // y
+  dir[2] = d2;  // z up
 
-  // below: naive implementation to "uniformly" sample hemisphere using "rejection sampling"
-  // to not be used for the "problem2" in the assignment
-  for(int i=0;i<10;++i) { // 10 is a magic number
-    const auto d0 = dfm2::MyERand48<double>(Xi);  // you can sample uniform distribution [0,1] with this function
-    const auto d1 = dfm2::MyERand48<double>(Xi);
-    const auto d2 = dfm2::MyERand48<double>(Xi);
-    dir[0] = d0 * 2 - 1; // dir[0] -> [-1,+1]
-    dir[1] = d1 * 2 - 1;
-    dir[2] = d2 * 2 - 1;
-    double len = std::sqrt(dir[0] * dir[0] + dir[1] * dir[1] + dir[2] * dir[2]);
-    if( len > 1 ){ continue; } // reject if outside the unit sphere
-    if( len < 1.0e-5 ){ continue; }
-    // project on the surface of the unit sphere
-    dir[0] /= len;
-    dir[1] /= len;
-    dir[2] /= len;
-    double cos = nrm[0]*dir[0] + nrm[1]*dir[1] + nrm[2]*dir[2]; // cosine weight
-    if( cos < 0 ){ continue; }
-    return cos*2;  // (coefficient=1/M_PI) * (area_of_hemisphere=M_PI*2) = 2
-  }
-  return 0;
+  double cos = nrm[0]*dir[0] + nrm[1]*dir[1] + nrm[2]*dir[2];
+  return cos*2;
 }
 
 double SampleAmbientOcclusion(
