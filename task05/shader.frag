@@ -185,6 +185,16 @@ void main()
     // Problem2 of the assignment
     // write some code to complete the implementation of bisection method
     // around 10 lines of code should be enough
+
+    int snm = SturmNumber(middle,sturm_seq);
+    if(snu != snm){
+      nstack = nstack+1;
+      stack[nstack-1] =  range(middle, upper, snm, snu);
+    }
+    if(snl != snm){
+      nstack = nstack+1;
+      stack[nstack-1] =  range(lower, middle, snl, snm);
+    }
   }
 
 
