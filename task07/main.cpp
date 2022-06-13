@@ -129,7 +129,9 @@ int main() {
       // if energy is zero, the tip of the cone (output position) and the red sphere (target position) match.
       // Adjust the coefficient LM algorithm such that the energy decrease after updating "arb.angle".
       // The implementation should be 3-5 in lines.
-
+      double lambda = 1; // lambda = 1/alpha
+      Eigen::Matrix<double,8,1> delta = - (diff_pos_def.transpose()*diff_pos_def + lambda * Eigen::Matrix<double, 8, 8>::Identity()).inverse() * (diff_pos_def.transpose()*(pos_def-pos_trg));
+      arb.angle = angle0 + delta;
       // editing ends here
       arb.UpdateTransformations();
       double W1 = 0.5*(arb.pos_def - pos_trg).dot(arb.pos_def - pos_trg); // energy after update
